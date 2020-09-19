@@ -24,7 +24,7 @@ document.body.appendChild(renderer.domElement);
 
 // Create Contents
 const geometry = new THREE.PlaneGeometry(2, 2);
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const material = new THREE.MeshBasicMaterial({ color: 0x464646 });
 const plane = new THREE.Mesh(geometry, material);
 scene.add(plane);
 

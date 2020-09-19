@@ -11,8 +11,15 @@ const vShader = `
 // uniform mat4 viewMatrix;
 // uniform mat4 modelMatrix;
 
+// attribute vec3 position;
+// attribute vec3 normal;
+// attribute vec2 uv;
+
+varying vec3 v_position;
+
 void main()
 {
+  v_position = position;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * 
                 vec4(position * 0.5, 1.0);
 }
@@ -23,9 +30,14 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
+varying vec3 v_position;
+
 void main()
 {
-  gl_FragColor = vec4(.3, .3, .3, 1.0);
+  vec3 color = vec3(0.0);
+  color.r = clamp(v_position.x, 0.0, 1.0);
+  color.g = clamp(v_position.y, 0.0, 1.0);
+  gl_FragColor = vec4(color, 1.0);
 }
 `
 
@@ -37,6 +49,8 @@ const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+// Custom Uniform attributes
 
 // Create Contents
 const geometry = new THREE.PlaneGeometry(2, 2);

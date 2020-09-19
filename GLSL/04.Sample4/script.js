@@ -23,9 +23,13 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
+uniform vec2 u_resolution;
+
 void main()
 {
-  gl_FragColor = vec4(.3, .3, .3, 1.0);
+  vec2 uv = gl_FragCoord.xy/u_resolution;
+  vec3 color = mix(vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0) , uv.y);
+  gl_FragColor = vec4(color, 1.0);
 }
 `
 
@@ -38,9 +42,17 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Custom Uniform attributes
+const uniforms = {
+  u_resolution: {
+    value: { x: 0.0, y: 0.0 }
+  }
+}
+
 // Create Contents
 const geometry = new THREE.PlaneGeometry(2, 2);
 const material = new THREE.ShaderMaterial({
+  uniforms: uniforms,
   vertexShader: vShader,
   fragmentShader: fShader
 });
@@ -70,6 +82,10 @@ function onWindowResize(event) {
   camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  if (uniforms.u_resolution != undefined) {
+    uniforms.u_resolution.value.x = window.innerWidth;
+    uniforms.u_resolution.value.y = window.innerHeight;
+  }
 }
 
 function animate() {
