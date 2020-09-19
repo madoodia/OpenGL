@@ -23,15 +23,15 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_color;
+uniform vec2 uMouse;
+uniform vec2 uResolution;
+uniform vec3 uColor;
 
 void main()
 {
-  vec2 v = u_mouse/u_resolution;
+  vec2 v = uMouse/uResolution;
   vec3 color = vec3(v.x, 0.0, v.y);
-  // gl_FragColor = vec4(u_color, 1.0);
+  // gl_FragColor = vec4(uColor, 1.0);
   gl_FragColor = vec4(color, 1.0);
 }
 `
@@ -47,9 +47,9 @@ document.body.appendChild(renderer.domElement);
 
 // Custom uniforms
 const uniforms = {
-  u_mouse: { value: { x: 0.0, y: 0.0 } },
-  u_resolution: { value: { x: 0.0, y: 0.0 } },
-  u_color: { value: new THREE.Color(0x990099) }
+  uMouse: { value: { x: 0.0, y: 0.0 } },
+  uResolution: { value: { x: 0.0, y: 0.0 } },
+  uColor: { value: new THREE.Color(0x990099) }
 }
 
 // Create Contents
@@ -78,8 +78,8 @@ animate();
 // ---------------------------
 
 function move(event) {
-  uniforms.u_mouse.value.x = (event.touches) ? event.touches[0].clientX : event.clientX;
-  uniforms.u_mouse.value.y = (event.touches) ? event.touches[0].clientY : event.clientY;
+  uniforms.uMouse.value.x = (event.touches) ? event.touches[0].clientX : event.clientX;
+  uniforms.uMouse.value.y = (event.touches) ? event.touches[0].clientY : event.clientY;
 }
 
 function onWindowResize(event) {
@@ -98,9 +98,9 @@ function onWindowResize(event) {
   camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  if (uniforms.u_resolution != undefined) {
-    uniforms.u_resolution.value.x = window.innerWidth;
-    uniforms.u_resolution.value.y = window.innerHeight;
+  if (uniforms.uResolution != undefined) {
+    uniforms.uResolution.value.x = window.innerWidth;
+    uniforms.uResolution.value.y = window.innerHeight;
   }
 }
 

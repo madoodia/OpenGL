@@ -11,10 +11,17 @@ const vShader = `
 // uniform mat4 viewMatrix;
 // uniform mat4 modelMatrix;
 
+// attribute vec3 position;
+// attribute vec3 normal;
+// attribute vec2 uv;
+
+varying vec3 vPosition;
+
 void main()
 {
+  vPosition = position;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * 
-                vec4(position * 0.5, 1.0);
+                vec4(position * 0.3, 1.0);
 }
 `
 
@@ -23,23 +30,26 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
-uniform vec2 uResolution;
+varying vec3 vPosition;
+
+float rect(vec2 pt, vec2 size, vec2 center)
+{
+  vec2 p = pt - center;
+  vec2 halfSize = size * 0.5;
+
+  float horz = step(-halfSize.x, p.x) - step(halfSize.x, p.x);
+  float vert = step(-halfSize.y, p.y) - step(halfSize.y, p.y);
+
+  return horz * vert;
+}
 
 void main()
 {
-  vec2 uv = gl_FragCoord.xy/uResolution;
-  vec3 color = mix(vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0) , uv.y);
+  float square1 = rect(vPosition.xy, vec2(0.3), vec2(-0.5, 0.0));
+  float square2 = rect(vPosition.xy, vec2(0.4), vec2(0.5, 0.0));
+  vec3 color = vec3(1.0, 1.0, 0.0) * square1 + vec3(0.0, 1.0, 0.0) * square2;
   gl_FragColor = vec4(color, 1.0);
 }
-
-
-// Custom mix function
-/*
-vec3 mix(v1, v2, a) {
-  vec3 result = v1*(1-a)+v2*a;
-  return result;
-}
-*/
 `
 
 
@@ -52,16 +62,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Custom Uniform attributes
-const uniforms = {
-  uResolution: {
-    value: { x: 0.0, y: 0.0 }
-  }
-}
 
 // Create Contents
 const geometry = new THREE.PlaneGeometry(2, 2);
 const material = new THREE.ShaderMaterial({
-  uniforms: uniforms,
   vertexShader: vShader,
   fragmentShader: fShader
 });
@@ -91,10 +95,6 @@ function onWindowResize(event) {
   camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  if (uniforms.uResolution != undefined) {
-    uniforms.uResolution.value.x = window.innerWidth;
-    uniforms.uResolution.value.y = window.innerHeight;
-  }
 }
 
 function animate() {

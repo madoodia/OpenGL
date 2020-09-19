@@ -11,8 +11,15 @@ const vShader = `
 // uniform mat4 viewMatrix;
 // uniform mat4 modelMatrix;
 
+// attribute vec3 position;
+// attribute vec3 normal;
+// attribute vec2 uv;
+
+varying vec3 vPosition;
+
 void main()
 {
+  vPosition = position;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * 
                 vec4(position * 0.5, 1.0);
 }
@@ -23,23 +30,27 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
-uniform vec2 uResolution;
+varying vec3 vPosition;
 
 void main()
 {
-  vec2 uv = gl_FragCoord.xy/uResolution;
-  vec3 color = mix(vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0) , uv.y);
+  vec3 color = vec3(0.0);
+  // color.r = step(0.0, vPosition.x);
+  color.r = smoothstep(0.0, 0.4, vPosition.x);
+  // color.g = step(0.0, vPosition.y);
+  color.g = smoothstep(0.0, 0.4, vPosition.y);
   gl_FragColor = vec4(color, 1.0);
 }
 
-
-// Custom mix function
+// Custom smoothstep
 /*
-vec3 mix(v1, v2, a) {
-  vec3 result = v1*(1-a)+v2*a;
-  return result;
+float smoothstep(edge0, edge1, n)
+{
+  float t = clamp((n-edge0) / (edge1-edge0), 0.0, 1.0);
+  return t*t*(3.0-2.0*t);
 }
 */
+
 `
 
 
@@ -52,16 +63,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Custom Uniform attributes
-const uniforms = {
-  uResolution: {
-    value: { x: 0.0, y: 0.0 }
-  }
-}
 
 // Create Contents
 const geometry = new THREE.PlaneGeometry(2, 2);
 const material = new THREE.ShaderMaterial({
-  uniforms: uniforms,
   vertexShader: vShader,
   fragmentShader: fShader
 });
@@ -91,10 +96,6 @@ function onWindowResize(event) {
   camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  if (uniforms.uResolution != undefined) {
-    uniforms.uResolution.value.x = window.innerWidth;
-    uniforms.uResolution.value.y = window.innerHeight;
-  }
 }
 
 function animate() {

@@ -15,11 +15,11 @@ const vShader = `
 // attribute vec3 normal;
 // attribute vec2 uv;
 
-varying vec3 v_position;
+varying vec3 vPosition;
 
 void main()
 {
-  v_position = position;
+  vPosition = position;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * 
                 vec4(position * 0.5, 1.0);
 }
@@ -30,13 +30,13 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
-varying vec3 v_position;
+varying vec3 vPosition;
 
 void main()
 {
   vec3 color = vec3(0.0);
-  color.r = clamp(v_position.x, 0.0, 1.0);
-  color.g = clamp(v_position.y, 0.0, 1.0);
+  color.r = clamp(vPosition.x, 0.0, 1.0);
+  color.g = clamp(vPosition.y, 0.0, 1.0);
   gl_FragColor = vec4(color, 1.0);
 }
 `

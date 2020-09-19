@@ -11,10 +11,17 @@ const vShader = `
 // uniform mat4 viewMatrix;
 // uniform mat4 modelMatrix;
 
+// attribute vec3 position;
+// attribute vec3 normal;
+// attribute vec2 uv;
+
+varying vec3 vPosition;
+
 void main()
 {
+  vPosition = position;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * 
-                vec4(position * 0.5, 1.0);
+                vec4(position * 0.3, 1.0);
 }
 `
 
@@ -23,23 +30,37 @@ const fShader = `
 // Is defined by default
 // out vec4 gl_FragColor;
 
-uniform vec2 uResolution;
+varying vec3 vPosition;
+
+uniform float uTime;
+
+mat2 getRotationMatrix(float theta)
+{
+  float s = sin(theta);
+  float c = cos(theta);
+  return mat2(c, -s, s, c);
+}
+
+float rect(vec2 pt, vec2 anchor, vec2 size, vec2 center)
+{
+  vec2 p = pt - center;
+  vec2 halfSize = size * 0.5;
+
+  float horz = step(-halfSize.x - anchor.x, p.x) - step(halfSize.x - anchor.x, p.x);
+  float vert = step(-halfSize.y - anchor.y, p.y) - step(halfSize.y - anchor.y, p.y);
+
+  return horz * vert;
+}
 
 void main()
 {
-  vec2 uv = gl_FragCoord.xy/uResolution;
-  vec3 color = mix(vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0) , uv.y);
+  vec2 center = vec2(0.5, 0.0);
+  mat2 mat = getRotationMatrix(uTime);
+  vec2 pt = (mat * (vPosition.xy - center) + center);
+  float square = rect(pt, vec2(0.15), vec2(0.3), center);
+  vec3 color = vec3(1.0, 1.0, 0.0) * square;
   gl_FragColor = vec4(color, 1.0);
 }
-
-
-// Custom mix function
-/*
-vec3 mix(v1, v2, a) {
-  vec3 result = v1*(1-a)+v2*a;
-  return result;
-}
-*/
 `
 
 
@@ -53,10 +74,11 @@ document.body.appendChild(renderer.domElement);
 
 // Custom Uniform attributes
 const uniforms = {
-  uResolution: {
-    value: { x: 0.0, y: 0.0 }
-  }
+  uTime: { value: 0.0 },
 }
+
+// Get Current time
+const clock = new THREE.Clock();
 
 // Create Contents
 const geometry = new THREE.PlaneGeometry(2, 2);
@@ -91,13 +113,10 @@ function onWindowResize(event) {
   camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  if (uniforms.uResolution != undefined) {
-    uniforms.uResolution.value.x = window.innerWidth;
-    uniforms.uResolution.value.y = window.innerHeight;
-  }
 }
 
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
+  uniforms.uTime.value = clock.getElapsedTime();
 }
