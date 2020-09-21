@@ -38,7 +38,14 @@ mat2 getRotationMatrix(float theta)
 {
   float s = sin(theta);
   float c = cos(theta);
-  return mat2(c, -s, s, c);
+  return mat2(c, -s, 
+              s, c);
+}
+
+mat2 getScaleMatrix(float scale)
+{
+  return mat2(scale, 0, 
+              0, scale);
 }
 
 float rect(vec2 pt, vec2 anchor, vec2 size, vec2 center)
@@ -55,8 +62,9 @@ float rect(vec2 pt, vec2 anchor, vec2 size, vec2 center)
 void main()
 {
   vec2 center = vec2(0.5, 0.0);
-  mat2 mat = getRotationMatrix(uTime);
-  vec2 pt = (mat * (vPosition.xy - center) + center);
+  mat2 rotMat = getRotationMatrix(uTime);
+  mat2 sclMat = getScaleMatrix((sin(uTime)+1.0)/3.0+0.5);
+  vec2 pt = (sclMat * rotMat * (vPosition.xy - center) + center);
   float square = rect(pt, vec2(0.15), vec2(0.3), center);
   vec3 color = vec3(1.0, 1.0, 0.0) * square;
   gl_FragColor = vec4(color, 1.0);
