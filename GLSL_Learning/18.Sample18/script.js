@@ -35,70 +35,39 @@ const fShader = `
 #define PI 3.14159265359
 #define PI2 6.28318530718
 
+uniform float uTime;
+uniform vec2 uResolution;
+
 varying vec3 vPosition;
 varying vec2 vUV;
-
-uniform float uTime;
-
-mat2 getRotationMatrix(float theta)
-{
-  float s = sin(theta);
-  float c = cos(theta);
-  return mat2(c, -s, 
-              s, c);
-}
-
-mat2 getScaleMatrix(float scale)
-{
-  return mat2(scale, 0, 
-              0, scale);
-}
-
-float drawCircle(vec2 pt, vec2 center, float radius, float lineWidth, float edgeThickness)
-{
-  vec2 p = pt - center;
-  float len = length(p);
-  float halfLineWidth = lineWidth / 2.0;
-  return smoothstep(radius-halfLineWidth-edgeThickness, radius-halfLineWidth, len) - 
-         smoothstep(radius+halfLineWidth, radius+halfLineWidth+edgeThickness, len);
-}
 
 float drawLine(float a, float b, float lineWidth, float edgeThickness)
 {
   float halfLineWidth = lineWidth * 0.5;
   return smoothstep(a-halfLineWidth-edgeThickness, a-halfLineWidth, b) - 
          smoothstep(a+halfLineWidth, a+halfLineWidth+edgeThickness, b);
+}
+
+float createBrick(vec2 pt, float mortarHeight, float edgeThickness)
+{
+  float result = drawLine(pt.y, 0.0, mortarHeight, edgeThickness);
+  result += drawLine(pt.y, 0.5, mortarHeight, edgeThickness);
+  result += drawLine(pt.y, 1.0, mortarHeight, edgeThickness);
   
+  if(pt.y > 0.5) pt.x = fract(pt.x + 0.5);
+  result += drawLine(pt.x, 0.5, mortarHeight, edgeThickness);
+
+  return result;
 }
 
-float sweep(vec2 pt, vec2 center, float radius, float lineWidth, float edgeThickness)
+void main(void)
 {
-  vec2 d = pt - center;
-  float theta = uTime * 2.0;
-  vec2 p = vec2(cos(theta), -sin(theta)) * radius;
-  float h = clamp(dot(d, p) / dot(p, p), 0.0, 1.0);
-  float l = length(d - p*h);
+  vec2 uv = fract(vUV * 10.0);
 
-  float gradient = 0.0;
-  const float gradientAngle = PI * 0.75;
+  vec3 color = mix(vec3(0.5, 0.4, 0.1), 
+                   vec3(0.8),
+                   createBrick(uv, 0.05, 0.001) * vec3(1.0));
 
-  if(length(d) < radius)
-  {
-    float angle = mod(theta + atan(d.y, d.x), PI2);
-    gradient = clamp(gradientAngle - angle, 0.0, gradientAngle) / gradientAngle * 0.6;
-  }
-  return gradient + 1.0 - smoothstep(lineWidth, lineWidth+edgeThickness, l);
-}
-
-void main()
-{
-  vec3 axisColor = vec3(0.05, 0.35, 0.05);
-  vec3 color = axisColor * drawLine(vUV.y, 0.5, 0.002, 0.001);
-  color += axisColor * drawLine(vUV.x, 0.5, 0.002, 0.001);
-  color += axisColor * drawCircle(vUV, vec2(0.5), 0.3, 0.002, 0.002);
-  color += axisColor * drawCircle(vUV, vec2(0.5), 0.2, 0.002, 0.002);
-  color += axisColor * drawCircle(vUV, vec2(0.5), 0.1, 0.002, 0.002);
-  color += sweep(vUV, vec2(0.5), 0.3, 0.003, 0.001) * vec3(0.1, 0.6, 0.1);
   gl_FragColor = vec4(color, 1.0);
 }
 `
@@ -115,6 +84,7 @@ document.body.appendChild(renderer.domElement);
 // Custom Uniform attributes
 const uniforms = {
   uTime: { value: 0.0 },
+  uResolution: { value: { x: 0.0, y: 0.0 } },
 }
 
 // Get Current time
@@ -153,6 +123,10 @@ function onWindowResize(event) {
   camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  if (uniforms.uResolution != undefined) {
+    uniforms.uResolution.value.x = window.innerWidth;
+    uniforms.uResolution.value.y = window.innerHeight;
+  }
 }
 
 function animate() {

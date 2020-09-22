@@ -92,11 +92,11 @@ float drawCircle(vec2 pt, vec2 center, float radius, float lineWidth, bool softe
   return smoothstep(radius-halfLineWidth-edge, radius-halfLineWidth, len) - smoothstep(radius+halfLineWidth, radius+halfLineWidth+edge, len);
 }
 
-float drawLine(float a, float b, float lineWidth, float edgeThicknes)
+float drawLine(float a, float b, float lineWidth, float edgeThickness)
 {
   float halfLineWidth = lineWidth * 0.5;
-  return smoothstep(a-halfLineWidth-edgeThicknes, a-halfLineWidth, b) - 
-         smoothstep(a+halfLineWidth, a+halfLineWidth+edgeThicknes, b);
+  return smoothstep(a-halfLineWidth-edgeThickness, a-halfLineWidth, b) - 
+         smoothstep(a+halfLineWidth, a+halfLineWidth+edgeThickness, b);
   
 }
 
