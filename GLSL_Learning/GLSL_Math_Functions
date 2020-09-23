@@ -8,3 +8,4 @@ cos
 sin
 atan
 fract
+texture2D
