@@ -9,3 +9,5 @@ sin
 atan
 fract
 texture2D
+sign
+mod
