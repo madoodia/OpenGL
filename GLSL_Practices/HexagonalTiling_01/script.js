@@ -29,49 +29,58 @@ const fShader = `
 
 uniform float uTime;
 uniform vec2 uResolution;
-
-float hash21(vec2 p)
+float HexDist(vec2 p)
 {
-  p = fract(p*vec2(234.34, 435.345));
-  p += dot(p, p+34.23);
-  return fract(p.x*p.y);
+    
+    p = abs(p);
+
+    float c = dot(p, normalize(vec2(1., 1.73)));
+    c = max(c, p.x);
+    
+    return sin(c*10.+uTime);
+    //return c;
+}
+
+vec4 HexCoords(vec2 uv)
+{   
+    vec2 r = vec2(1., 1.73);
+    vec2 h = r*.5;
+    vec2 a = mod(uv, r)-h;
+    vec2 b = mod(uv-h, r)-h;
+    
+    vec2 gv;
+    if(length(a)<length(b)) gv = a; else gv = b;
+    
+    vec2 id = uv-gv;
+    float y = .5-HexDist(gv);
+    float x = 0.;
+    
+    return vec4(x, y, id.x, id.y);
 }
 
 void main()
 {
   vec2 uv = (gl_FragCoord.xy-.5*uResolution.xy)/uResolution.y;
-  vec2 vUV = gl_FragCoord.xy/uResolution.xy;
-  uv *= 20.0;
-  // uv += uTime * 2.; // animate shader
 
-  vec2 gv = fract(uv)-.5;
-  vec2 id = floor(uv);
-
-  vec3 color = vec3(0.0);
-
-  float n = hash21(id); // retuen random number between 0 and 1
-  float width = .3*vUV.y;
-
-  if(n<.5) gv.x *= -1.;
-  vec2 cUV = gv-sign(gv.x+gv.y+.001)*.5;
-  float dist = length(cUV);
-  float mask = smoothstep(.01, -.01, abs(dist-.5) - width);
-  float angle = atan(cUV.x, cUV.y); // -pi to pi
-  float checker = mod(id.x+id.y, 2.) * 2.- 1.;
-  float flow = sin(uTime*10.+checker*angle*10.);
-  // color += flow * mask; // animate based on a checker
-
-  float x = fract(angle/1.57);
-  float y = (dist-(.5-width))/(2.*width);
-  // y = abs(y-.5)*2.;
-  if(n<.5 ^^ checker>0.) y=1.-y;
-  vec2 tUV = vec2(x, y);
-  color.rg += tUV * mask;
-  // color *= tUV.y;
-  color += y*mask;
-
-  // if(gv.x>.48 || gv.y>.48) color = vec3(1, 0, 0); // boundries
-  gl_FragColor = vec4(color, 1.0);
+  vec3 color = vec3(0.);
+      
+  // color += sin(HexDist(uv)*10.+uTime);
+  
+  uv *= 10.;
+  
+  // vec2 a = fract(uv)-.5;
+  // vec2 b = fract(uv-.5)-.5;
+  // color.rg = HexCoords(uv).xy;
+  
+  vec4 hc = HexCoords(uv);
+  // float c = 1.-smoothstep(0.05, .1, hc.y*.9);
+  // float c = 1.-smoothstep(0.05, .1, hc.y*sin(hc.z*hc.y+uTime));
+  float c = 1.-smoothstep(0.1, .2, hc.y*sin(hc.z*hc.w+uTime*.5));
+  // float c = 1.-smoothstep(0.05, .1, hc.y*sin(hc.z*hc.z+uTime));
+  // float c = 1.-smoothstep(0.05, .1, hc.y*sin(hc.w*hc.z+uTime));
+  color += c;
+  
+  gl_FragColor = vec4(color,1.0);    
 }
 `
 
