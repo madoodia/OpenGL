@@ -1,0 +1,25 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.github": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "**/build": true,
+      "**/*.ilk": true,
+      "**/*.pdb": true,
+      // "**/*.vs": true,
+      // "**/*.fs": true,
+      // "**/*.cs": true,
+      "**/*.dll": true
+    }
+  }
+}
